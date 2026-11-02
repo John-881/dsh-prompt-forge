@@ -55,5 +55,9 @@
     "check": "node --check lib/index.js && node --check lib/routes.js && node --check lib/orchestrate.js && node --check lib/llm.js && node --check lib/client.js && node --check lib/command.js && node --check lib/config.js && node --check lib/store.js && node --check tools/eval.mjs && node --check tools/switch.mjs",
     "eval": "node tools/eval.mjs",
     "status": "node tools/switch.mjs --status"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/John-881/dsh-prompt-forge.git"
   }
 }
