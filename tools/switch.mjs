@@ -98,6 +98,8 @@ function status() {
     bundled: bundles.includes(NAME),
     oldDisabled: patch.includes(DISABLE_OLD_MARKER),
     oldPresent: bundles.includes(OLD_NAME),
+    // 旧插件可能被 pnpm 剪枝或应用自己清掉：这时停用块就悬空了，每次启动都会告警。
+    oldDangling: patch.includes(DISABLE_OLD_MARKER) && !bundles.includes(OLD_NAME),
   }
 }
 
@@ -108,14 +110,15 @@ function printStatus() {
     ['依赖已安装', s.dependency],
     ['依赖指向本仓库', s.linkedHere],
     ['已登记进 bundles（=已启用）', s.bundled],
-    ['旧插件条目已停用', s.oldDisabled],
-    ['旧插件仍在 bundles', s.oldPresent],
+    ['旧插件仍在 profile（需互斥）', s.oldPresent],
+    ['停用块存在', s.oldDisabled],
   ]
   for (const [label, value] of rows) console.log(`${value ? '✔' : '✘'} ${label}`)
   if (!s.linkedHere) console.log(`  当前 spec：${s.spec ?? '(未安装)'}`)
 
   let verdict
   if (s.bundled && !s.linkedHere) verdict = '⚠ 指向的是别处的副本：先 --enable 重新链接，否则改这份代码不会生效'
+  else if (s.oldDangling) verdict = '⚠ patch 里有悬空的停用块（旧插件已不在 profile）：每次启动都会告警，跑 --enable 自动清理'
   else if (s.bundled && s.oldDisabled) verdict = `生效：${NAME} 接管，${OLD_NAME} 停用（需已重启）`
   else if (s.bundled && !s.oldDisabled && s.oldPresent) verdict = '冲突：两个插件都启用，必须停用其一'
   else if (s.bundled) verdict = `生效：${NAME} 接管`
@@ -200,7 +203,8 @@ function main() {
 
   if (args.has('--enable')) {
     const before = status()
-    if (before.bundled && before.linkedHere && (before.oldDisabled || !before.oldPresent || KEEP_OLD)) {
+    const conflict = before.oldPresent && !before.oldDisabled && !KEEP_OLD
+    if (before.bundled && before.linkedHere && !conflict && !before.oldDangling) {
       console.log('已经是启用状态，无需操作。')
       printStatus()
       return
@@ -212,8 +216,11 @@ function main() {
       }
     }
     if (KEEP_OLD) console.log('· --keep-old：保留旧插件启用状态（两个插件会同时接管）')
-    else if (!before.oldPresent) console.log(`· 未安装 ${OLD_NAME}，跳过互斥停用`)
-    else writeDisableBlock()
+    else if (before.oldPresent) writeDisableBlock()
+    else if (before.oldDangling) {
+      console.log(`· 未安装 ${OLD_NAME}，清理上次遗留的悬空停用块`)
+      removeDisableBlock()
+    } else console.log(`· 未安装 ${OLD_NAME}，无需互斥`)
     console.log('\n✓ 已完成。**必须重启宿主**（graph 行变化不热更新）。')
     console.log('  重启后核对：')
     console.log('   1) ~/.dsh/logs/dsh-prompt-forge/events.jsonl 应出现 {"event":"apply"}')
@@ -226,7 +233,11 @@ function main() {
     removeDisableBlock()
     const s = status()
     if (s.dependency) runCli('remove')
-    console.log(`\n✓ 已回滚到 ${OLD_NAME}。重启宿主生效。`)
+    console.log(
+      s.oldPresent
+        ? `\n✓ 已回滚，${OLD_NAME} 恢复接管。重启宿主生效。`
+        : `\n✓ 已卸载 ${NAME}。profile 里没有其他增强插件，增强功能会消失。重启宿主生效。`,
+    )
     printStatus()
     return
   }
