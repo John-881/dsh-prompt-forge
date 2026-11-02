@@ -1,0 +1,13 @@
+# 依赖
+node_modules/
+
+# 评测产物（每次跑都生成，不进版本库）
+eval/report-*.json
+
+# switch.mjs 改 patch 前自动生成的备份
+*.bak-forge-*
+
+# 运行时
+*.log
+.DS_Store
+Thumbs.db

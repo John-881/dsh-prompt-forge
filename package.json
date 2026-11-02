@@ -1,0 +1,59 @@
+{
+  "name": "dsh-prompt-forge",
+  "version": "0.1.0",
+  "description": "DeepSeek Harness 输入框提示词增强：就地改写、8s 可撤销、双向（补齐/收紧）、引用 chip 结构保真、效果可测。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "tools",
+    "eval",
+    "docs",
+    "cordis.patch.yml",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "prompt",
+    "prompt-enhance",
+    "prompt-engineering"
+  ],
+  "author": "John-881",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.6",
+    "dsh": ">=0.2.0-rc.2 <0.3.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    },
+    "compatibility": {
+      "dsh": ">=0.2.0-rc.2 <0.3.0",
+      "node": ">=22.6",
+      "profiles": [
+        "desktop",
+        "web"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "node --test test/unit.test.mjs test/host-integration.test.mjs test/client.test.mjs",
+    "check": "node --check lib/index.js && node --check lib/routes.js && node --check lib/orchestrate.js && node --check lib/llm.js && node --check lib/client.js && node --check lib/command.js && node --check lib/config.js && node --check lib/store.js && node --check tools/eval.mjs && node --check tools/switch.mjs",
+    "eval": "node tools/eval.mjs",
+    "status": "node tools/switch.mjs --status"
+  }
+}

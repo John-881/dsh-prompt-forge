@@ -1,0 +1,15 @@
+# dsh-prompt-forge bundle patch：把宿主条目插进 profile 名册。
+#
+# 本插件宿主半（exports "."）在宿主进程里注册：
+#   POST /prompt-forge/enhance  （一次性 JSON）
+#   POST /prompt-forge/enhance/stream （SSE 增量）
+#   /enhance 斜杠命令
+# 客户端半（M2，声明 dsh.client 后由 lib/client.js 提供）负责输入框按钮、
+# 行内状态条与撤销条。
+#
+# 与 dsh-prompt-enhance 互斥：两者都注册输入框右侧按钮、都绑 ctrl+alt+e、
+# 都占用宿主路由。切换时**同一次 patch 提交**里把旧条目置 disabled: true，
+# 再插入本条目；不要两个都启用。
+- insert:
+    - id: prompt-forge
+      name: dsh-prompt-forge
