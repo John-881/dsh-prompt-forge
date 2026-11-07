@@ -22,11 +22,10 @@
 # 1) 从本地目录装（开发时改代码即时生效，pnpm 建 link: 依赖）
 dsh plugin --profile desktop add /absolute/path/to/dsh-prompt-forge
 
-# 2) 从 GitHub 装
-dsh plugin --profile desktop add github:<owner>/dsh-prompt-forge
+# 2) 从 GitHub 装（pnpm 会自动 clone 本仓库，等同下载 + 安装）
+dsh plugin --profile desktop add github:John-881/dsh-prompt-forge
 
-# 3) 从 npm 装（若已发布）
-dsh plugin --profile desktop add dsh-prompt-forge
+# 3) 本仓库未发布到 npm：npm 上的 dsh-prompt-forge 同名包属于第三方项目 Aliboder/dsh-prompt-forge，勿装
 ```
 
 > **桌面版**：`dsh plugin --profile desktop ...` 在部分版本会被 CLI 拒绝（profile 由 Electron 应用独占）。此时走应用内「插件 → 安装插件」，包名或地址填 `github:<owner>/dsh-prompt-forge`。
